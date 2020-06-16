@@ -22,19 +22,21 @@ public class textBehaviour : MonoBehaviour
     // Start is called before the first frame updateS
     void Start()
     {
-        thisText = GetComponent <Text> ();
+        thisText = GetComponent<Text>();
         thisText.text = "This text must change once connection is established";
 
-        ClientSocket = GetComponent <ClientSocket> ();
+        ClientSocket = GetComponent<ClientSocket>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(textUpdate)
+        thisText.text = ClientSocket.getMessage();
+        GetNewInput();
+        if (textUpdate)
         {
             updateText();
-            GetNewInput();
+            Debug.Log("it's certainly trying to do something");
         }
     }
 
@@ -46,12 +48,14 @@ public class textBehaviour : MonoBehaviour
         {
             previousText = inputText;
             textUpdate = true;
+            Debug.Log("check for input works");
         }
 
         textUpdate = false;
     }
 
-    private void updateText(){  
-        thisText.text = inputText;;
+    private void updateText()
+    {
+        thisText.text = inputText; ;
     }
 }
