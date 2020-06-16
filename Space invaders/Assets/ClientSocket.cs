@@ -11,8 +11,8 @@ public class ClientSocket : MonoBehaviour
 {
     private TcpClient socketConnection;
     private Thread recievingThread;
-    private String Host = "Public ip of wifi";
-    private Int32 Port = 5001;
+    private String Host = "192.168.4.50";
+    private Int32 Port = 64000;
 
     public String message = "";
 
@@ -46,6 +46,8 @@ public class ClientSocket : MonoBehaviour
     public void ListenForData(){
         try{
             socketConnection = new TcpClient(Host, Port);
+            System.Net.IPAddress ipAddress = System.Net.IPAddress.Parse("192.168.4.50");
+            socketConnection.Connect(Host, Port);
             Byte[] bytes = new Byte[1024];
             while(true){
                 using (NetworkStream stream = socketConnection.GetStream()){
@@ -55,11 +57,13 @@ public class ClientSocket : MonoBehaviour
                         Array.Copy(bytes, 0, incommingData, 0, length);
                         string serverMessage = Encoding.ASCII.GetString(incommingData);
                         message = serverMessage;
+                        Debug.Log(message);
                     }
                 }
             }
         }
         catch(SocketException socketException){
+            message = socketException.ToString();
             Debug.Log("Socket exception: " + socketException);
         }
     }
