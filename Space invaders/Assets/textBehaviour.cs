@@ -9,7 +9,7 @@ public class textBehaviour : MonoBehaviour
     private int counter = 0;
     private bool newInputRecieved = false;
 
-    // Start is called before the first frame update
+    // Start is called before the first frame updateS
     void Start()
     {
         thisText.text = "This text must change once connection is established";
