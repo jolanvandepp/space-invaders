@@ -15,38 +15,40 @@ public class textBehaviour : MonoBehaviour
     public String inputText = "";
     public String previousText = "";
 
+    public bool textUpdate = false;
+
     public ClientSocket ClientSocket;
 
     // Start is called before the first frame updateS
     void Start()
     {
+        thisText = GetComponent <Text> ();
         thisText.text = "This text must change once connection is established";
 
-        ClientSocket = GameObject.Find("Network").GetComponent(typeof(ClientSocket)) as ClientSocket;
+        ClientSocket = GetComponent <ClientSocket> ();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(NewInput){
+        if(textUpdate)
+        {
             updateText();
+            GetNewInput();
         }
     }
 
-    private bool NewInput
+    private void GetNewInput()
     {
-        get
+        inputText = ClientSocket.getMessage();
+
+        if (inputText != previousText)
         {
-            inputText = ClientSocket.getMessage();
-
-            if (inputText != previousText)
-            {
-                previousText = inputText;
-                return true;
-            }
-
-            return false;
+            previousText = inputText;
+            textUpdate = true;
         }
+
+        textUpdate = false;
     }
 
     private void updateText(){  
