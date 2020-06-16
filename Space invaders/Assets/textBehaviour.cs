@@ -2,34 +2,54 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System;
+using System.IO;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
 
 public class textBehaviour : MonoBehaviour
 {
-    public Text thisText;
-    private int counter = 0;
-    private bool newInputRecieved = false;
+    private Text thisText;
+
+    public String inputText = "";
+    public String previousText = "";
+
+    public ClientSocket ClientSocket;
 
     // Start is called before the first frame updateS
     void Start()
     {
         thisText.text = "This text must change once connection is established";
+
+        ClientSocket = GameObject.Find("Network").GetComponent(typeof(ClientSocket)) as ClientSocket;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(getNewInput()){
+        if(NewInput){
             updateText();
         }
     }
 
-    private bool getNewInput(){
+    private bool NewInput
+    {
+        get
+        {
+            inputText = ClientSocket.getMessage();
 
-        return false;
+            if (inputText != previousText)
+            {
+                previousText = inputText;
+                return true;
+            }
+
+            return false;
+        }
     }
 
     private void updateText(){  
-        counter++;
-        thisText.text = "this text has recieved new input :" + counter;
+        thisText.text = inputText;;
     }
 }
