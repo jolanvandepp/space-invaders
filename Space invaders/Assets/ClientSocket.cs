@@ -3,68 +3,66 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using System.IO;
-using System.Net.Sockets; 
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
 
 public class ClientSocket : MonoBehaviour
 {
-    bool socketReady = false;
-    TcpClient mySocket;
-    public NetworkStream theStream;
-    StreamWriter theWriter;
-    StreamReader theReader;
-    public String Host = "INSERT the public IP of router or Local IP of Arduino";
-    public Int32 Port = 5001; 
-    public bool lightStatus;
+    private TcpClient socketConnection;
+    private Thread recievingThread;
+    private String Host = "Public ip of wifi";
+    private Int32 Port = 5001;
+
+    public String message = "";
 
     // Start is called before the first frame update
     void Start()
     {
-        setupSocket ();
+        establishConnection();
     }
 
     // Update is called once per frame
     void Update()
     {
-        while (theStream.DataAvailable){
-            string recievedData = readSocket();
+        
+    }
+
+    public void establishConnection(){
+        try{
+            recievingThread = new Thread (new ThreadStart(ListenForData));
+            recievingThread.IsBackground = true;
+            recievingThread.Start();
+        }
+        catch(Exception e){
+            Debug.Log("On client connect exception " + e);
         }
     }
 
-    public void setupSocket(){
-        try {                
-            mySocket = new TcpClient(Host, Port);
-            theStream = mySocket.GetStream();
-            theWriter = new StreamWriter(theStream);
-            theReader = new StreamReader(theStream);
-            socketReady = true;
+    public String getMessage(){
+        return message;
+    }
+
+    public void ListenForData(){
+        try{
+            socketConnection = new TcpClient(Host, Port);
+            Byte[] bytes = new Byte[1024];
+            while(true){
+                using (NetworkStream stream = socketConnection.GetStream()){
+                    int length; 
+                    while ((length = stream.Read(bytes, 0, bytes.Length)) != 0){
+                        var incommingData = new byte[length];
+                        Array.Copy(bytes, 0, incommingData, 0, length);
+                        string serverMessage = Encoding.ASCII.GetString(incommingData);
+                        message = serverMessage;
+                    }
+                }
+            }
         }
-        catch (Exception e) {
-            Debug.Log("Socket error:" + e);
+        catch(SocketException socketException){
+            Debug.Log("Socket exception: " + socketException);
         }
     }
 
-    public void writeSocket(string theLine) {
-        if (!socketReady)
-            return;
-        String tmpString = theLine;
-        theWriter.Write(tmpString);
-        theWriter.Flush();
-    }
-
-    public String readSocket() {
-        if (!socketReady)
-            return "";
-        if (theStream.DataAvailable)
-            return theReader.ReadLine();
-        return "NoData";
-    }
-
-    public void closeSocket() {
-        if (!socketReady)
-            return;
-        theWriter.Close();
-        theReader.Close();
-        mySocket.Close();
-        socketReady = false;
-    }
+    
 }
